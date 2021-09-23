@@ -3,8 +3,8 @@
 #include <rospy_tutorials/Floats.h>
 #include <std_msgs/UInt16.h>
 
-#define PULSES_PER_TURN (8384.0)   // 2096 x 4  Encoder Resolution:  CPR *4  for convert to PPC
-#define FOR 1  //  robot Forward test
+#define PULSES_PER_TURN (38000.0)   // 2096 x 4  Encoder Resolution:  CPR *4  for convert to PPC
+                                   // from manual turn wheel ~38000 , ~38100   
 
 #define encoderPinA1      19                       // Quadrature encoder A pin
 #define encoderPinB1      18                       // Quadrature encoder B pin
@@ -29,11 +29,10 @@ boolean Direction ;//the rotation direction
 long previousMillis = 0;
 long currentMillis = 0;
 
-int8_t i_dir_r = 1;
-int8_t i_dir_l = 1;
+
 //-----------------------------------------------------------------------------
 
-double  kp =1, ki =20 , kd =0;             // modify for optimal performance
+double  kp =1, ki =20 , kd =0;             // ki=20 modify for optimal performance
 double  inputRight = 0, inputLeft = 0, outputRight = 0, outputLeft = 0 ;
 double  setpointRight = 0 , setpointLeft = 0;
 
@@ -124,9 +123,14 @@ void loop()
 
      if((currentMillis - lastTime) > 500 )
    {
-      inputLeft = (360.0*1000*(encoderPosRight-last_pos_right)) /( PULSES_PER_TURN *(now - lastTime));
       lastTime=now;
+      
+      inputRight = (360.0*1000*(encoderPosRight-last_pos_right)) /( PULSES_PER_TURN *(now - lastTime));
+      inputLeft  = (360.0*1000*(encoderPosLeft -last_pos_left)) /( PULSES_PER_TURN *(now - lastTime));
+      
       last_pos_right=encoderPosRight;
+      last_pos_left =encoderPosLeft;
+      
    }
 
     if( (currentMillis - lastTime) > 100 ){
@@ -245,12 +249,12 @@ void wheelSpeedRightB2()
 void pwmRightOut(float out) {                                
   if (out > 0) {
 
-    analogWrite(M2, out);                             // drive motor CW
-    analogWrite(M1, 0);
+    analogWrite(M1, 0);                             // drive motor CW
+    analogWrite(M2, out);
   }
   else {
-    analogWrite(M2, 0);
-    analogWrite(M1, abs(out));                        // drive motor CCW
+    analogWrite(M1, abs(out));
+    analogWrite(M2, 0);                        // drive motor CCW
   }
 }
 void pwmLeftOut(float out) {                                
